@@ -21,3 +21,14 @@ Here a proposal:
 
 ## Train DNN
 - TO BE FILLED
+
+## Extra
+#### Submit a pyspark script using YARN
+```
+spark-submit --master yarn-client --queue default \
+    --num-executors 20 --executor-memory 1G --executor-cores 2 \
+    --driver-memory 1G \
+    YOUR_SCRIPT.py
+```
+At the moment it gives the error:
+Exception in thread "main" java.lang.Exception: When running with master 'yarn-cluster' either HADOOP_CONF_DIR or YARN_CONF_DIR must be set in the environment.

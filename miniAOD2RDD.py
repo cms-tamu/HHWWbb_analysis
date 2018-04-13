@@ -1,21 +1,23 @@
 # Import stuff
-import os, sys
+import os, sys, shutil
 import pandas
 import utilities.Samples_and_Functions as sf
-#execfile("utilities/Samples_and_Functions.py")
 
 # Start up spark and get our SparkSession... the lines below specify the dipendencies
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 spark = SparkSession.builder \
     .appName(# Name of your application in the dashboard/UI
-             "00-test-spark"
+             "spark-miniAOD2RDD"
             ) \
     .config(# Tell Spark to load some extra libraries from Maven (the Java repository)
             'spark.jars.packages',
             'org.diana-hep:spark-root_2.11:0.1.15,org.diana-hep:histogrammar-sparksql_2.11:1.0.4'
             ) \
     .getOrCreate()
+# 
+#print str(spark.debug.maxToStringFields)
+#spark.debug.maxToStringFields=50
 
 # Read the ROOT file into a Spark DataFrame...
 df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
@@ -36,5 +38,7 @@ print "After selection you have ", df_TT.count(), "events in TT"
 print "After selection you have ", df_S_Grav500.count(), "events in Grav_500"
 
 #Now Saving the dataframe locally
-df_S_Grav500.toPandas().to_csv('/data/MDD/df_S_Grav500.csv')
-df_TT.toPandas().to_csv('/data/MDD/df_TT.csv')
+shutil.rmtree( sf.MDDpath + "df_Grav500.csv" )
+df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + "df_Grav500.csv" )
+shutil.rmtree( sf.MDDpath + "df_TT.csv" )
+df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + "df_TT.csv" )
