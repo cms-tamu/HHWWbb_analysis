@@ -1,7 +1,8 @@
 # Import stuff
 import os, sys
 import pandas
-execfile("utilities/Samples_and_Functions.py")
+import utilities.Samples_and_Functions as sf
+#execfile("utilities/Samples_and_Functions.py")
 
 # Start up spark and get our SparkSession... the lines below specify the dipendencies
 from pyspark.sql import SparkSession
@@ -17,8 +18,8 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Read the ROOT file into a Spark DataFrame...
-df_TT = spark.read.format("org.dianahep.sparkroot").load(TT_file)
-df_S_Grav500 = spark.read.format("org.dianahep.sparkroot").load(S_Grav500_file)
+df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
+df_S_Grav500 = spark.read.format("org.dianahep.sparkroot").load(sf.S_Grav500_file)
 print "The Variables you have are: "
 df_TT.printSchema()
 #use the following to drop variables you will not use
