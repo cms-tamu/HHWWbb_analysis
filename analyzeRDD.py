@@ -22,7 +22,7 @@ spark = SparkSession.builder \
 
 # Personalize outputname
 now = datetime.datetime.now()
-name_suffix = str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
+name_suffix = "analyzeRDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 
 # Read the ROOT file into a Spark DataFrame...
 df_TT = spark.read.load(sf.TT_df, format="csv", sep=",", inferSchema="true", header="true")
@@ -68,7 +68,6 @@ hg.sparksql.addMethods(df_TT)
 #
 h_ll_pt = df_S_Grav500.Bin(50, 50, 350, df_S_Grav500['ll_pt'])
 ax = h_ll_pt.plot.matplotlib(name="Pt(l1+l2) [GeV]")
-#plt.show()
 plt.savefig('figures/h_ll_pt.png')
 
 #Now Saving the dataframe locally

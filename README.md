@@ -12,29 +12,52 @@ Here a proposal:
 -  TO BE FILLED
 
 ## Converting root files to RDD
-- python miniAOD2RDD.py
-- inputs are defined in utilities/
-- outputs will be in /data/RDD
+-  Inputs are defined in utilities/
+-  Outputs will be in /data/RDD
+-  Execution:
+```
+spark-submit --class org.apache.spark.deploy.master.Master \
+--packages org.diana-hep:spark-root_2.11:0.1.15,org.diana-hep:histogrammar-sparksql_2.11:1.0.4 \
+--master spark://cmstca:7077 \
+--deploy-mode client $PWD/miniAOD2RDD.py
+```
+(or python miniAOD2RDD.py)
 
 ## Run Analysis
-- TO BE FILLED
+-  Inputs are defined in utilities/
+-  Execution:
+```
+spark-submit --class org.apache.spark.deploy.master.Master \
+--packages org.diana-hep:histogrammar-sparksql_2.11:1.0.4 \
+--master spark://cmstca:7077 \
+--deploy-mode client $PWD/analyzeRDD.py
+```
+(or python analyzeRDD.py)
 
 ## Train DNN
 - TO BE FILLED
 
 ## Extra
-#### Submit a pyspark script using YARN
-http://tech.magnetic.com/2016/03/pyspark-carpentry-how-to-launch-a-pyspark-job-with-yarn-cluster.html
+#### Submit a pyspark script
+Start the master:
 ```
-spark-submit --master yarn-cluster --queue default --num-executors 20 --executor-memory 1G \
---executor-cores 2 --driver-memory 1G --conf spark.yarn.appMasterEnv.SPARK_HOME=/dev/null \
---conf spark.executorEnv.SPARK_HOME=/dev/null --files miniAOD2RDD.in   miniAOD2RDD.py
+/data/spark-2.3.0-bin-hadoop2.7/sbin/start-master.sh
 ```
-Seems you need to modify similar files:  
-/data/hadoop-3.1.0/etc/hadoop/yarn-site.xml
-yarn-site.xmi.org
-yarn-site.xml.template
-in hadoop /conf
+-  Give you a file where you can see the marster url: spark://cmstca:7077
+Start the slave:
+```
+/data/spark-2.3.0-bin-hadoop2.7/sbin/start-slave.sh spark://cmstca:7077
+```
+Then you can submit the job:
+```
+spark-submit --class org.apache.spark.deploy.master.Master \
+--master spark://cmstca:7077 \
+--deploy-mode client /home/lpernie/HHWWbb/HHWWbb_analysis/analyzeRDD.py
+```
+And at the end:
+```
+/data/spark-2.3.0-bin-hadoop2.7/sbin/stop-all.sh
+```
 
 ####
 Using hadoop command

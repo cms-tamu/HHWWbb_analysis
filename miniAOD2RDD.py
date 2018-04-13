@@ -18,7 +18,7 @@ spark = SparkSession.builder \
 
 # Personalize outputname
 now = datetime.datetime.now()
-name_suffix = str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
+name_suffix = "miniAOD2RDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 
 # Read the ROOT file into a Spark DataFrame...
 df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
