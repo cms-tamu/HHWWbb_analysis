@@ -1,5 +1,5 @@
 # Import stuff
-import os, sys, shutil
+import os, sys, shutil, datetime, getpass
 import pandas
 import utilities.Samples_and_Functions as sf
 
@@ -15,18 +15,22 @@ spark = SparkSession.builder \
             'org.diana-hep:spark-root_2.11:0.1.15,org.diana-hep:histogrammar-sparksql_2.11:1.0.4'
             ) \
     .getOrCreate()
-# 
-#print str(spark.debug.maxToStringFields)
-#spark.debug.maxToStringFields=50
+
+# Personalize outputname
+now = datetime.datetime.now()
+name_suffix = str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 
 # Read the ROOT file into a Spark DataFrame...
 df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
 df_S_Grav500 = spark.read.format("org.dianahep.sparkroot").load(sf.S_Grav500_file)
+
+#use the following to drop variables you will not use
+var_todrop = [] #to be finalized
+for iVar in var_todrop:
+    df_TT = df_TT.drop(iVar)
+    df_S_Grav500 = df_S_Grav500.drop(iVar)
 print "The Variables you have are: "
 df_TT.printSchema()
-#use the following to drop variables you will not use
-#df_TT = df_TT.drop()
-#df_S_Grav500 = df_S_Grav500.drop()
 
 # Let's make a basic selection
 print "You have ", df_TT.count(), "events in TT"
@@ -38,7 +42,5 @@ print "After selection you have ", df_TT.count(), "events in TT"
 print "After selection you have ", df_S_Grav500.count(), "events in Grav_500"
 
 #Now Saving the dataframe locally
-shutil.rmtree( sf.MDDpath + "df_Grav500.csv" )
-df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + "df_Grav500.csv" )
-shutil.rmtree( sf.MDDpath + "df_TT.csv" )
-df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + "df_TT.csv" )
+df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "df_Grav500.csv" )
+df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "df_TT.csv" )

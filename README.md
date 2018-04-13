@@ -26,13 +26,21 @@ Here a proposal:
 #### Submit a pyspark script using YARN
 http://tech.magnetic.com/2016/03/pyspark-carpentry-how-to-launch-a-pyspark-job-with-yarn-cluster.html
 ```
-spark-submit --master yarn-client --queue default \
-    --num-executors 20 --executor-memory 1G --executor-cores 2 \
-    --driver-memory 1G \
-    YOUR_SCRIPT.py
+spark-submit --master yarn-cluster --queue default --num-executors 20 --executor-memory 1G \
+--executor-cores 2 --driver-memory 1G --conf spark.yarn.appMasterEnv.SPARK_HOME=/dev/null \
+--conf spark.executorEnv.SPARK_HOME=/dev/null --files miniAOD2RDD.in   miniAOD2RDD.py
 ```
-At the moment it gives the error:
-Exception in thread "main" java.lang.Exception: When running with master 'yarn-cluster' either HADOOP_CONF_DIR or YARN_CONF_DIR must be set in the environment.
+Seems you need to modify similar files:  
+/data/hadoop-3.1.0/etc/hadoop/yarn-site.xml
+yarn-site.xmi.org
+yarn-site.xml.template
+in hadoop /conf
+
+####
+Using hadoop command
+hdfs dfs -df -h
+hdfs dfs -df -h /data/
+hadoop fs -ls /
 
 #### Needed in your .bashrc
 ```
@@ -55,4 +63,6 @@ export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
 export PATH=$JAVA_HOME/bin:$PATH
 #ROOT
 source /data/root/bin/thisroot.sh
+#Histogrammar
+export PYTHONPATH=/data/histogrammar/histogrammar-python:$PYTHONPATH
 ```
