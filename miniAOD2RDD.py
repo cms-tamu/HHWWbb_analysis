@@ -33,6 +33,7 @@ print "The Variables you have are: "
 df_TT.printSchema()
 
 # Let's make a basic selection
+print '------------------------SELECETION------------------------'
 print "You have ", df_TT.count(), "events in TT"
 print "You have ", df_S_Grav500.count(), "events in Grav_500"
 Selection = 'lep1_pt>20 and lep2_pt>20 and ll_M>76 and ll_M<106 and HME>250'
@@ -42,5 +43,6 @@ print "After selection you have ", df_TT.count(), "events in TT"
 print "After selection you have ", df_S_Grav500.count(), "events in Grav_500"
 
 #Now Saving the dataframe locally
-df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "df_Grav500.csv" )
-df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "df_TT.csv" )
+print '------------------------SAVING RDD------------------------'
+df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "df_Grav500.csv" )
+df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "df_TT.csv" )

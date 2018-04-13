@@ -42,7 +42,7 @@ df_S_Grav500 = df_S_Grav500.where(Selection)
 print "After selection you have ", df_TT.count(), "events in TT"
 print "After selection you have ", df_S_Grav500.count(), "events in Grav_500"
 
-# Let's add a new variable to the MDD. This can be done usoing a User Define Function
+# Let's add a new variable to the RDD. This can be done usoing a User Define Function
 # Spark will execute the following function for each row. You can put arbitrary python
 def DphiJet( jet1_phi, jet2_phi ):
     return math.fabs( jet1_phi - jet2_phi )
@@ -72,6 +72,6 @@ ax = h_ll_pt.plot.matplotlib(name="Pt(l1+l2) [GeV]")
 plt.savefig('figures/h_ll_pt.png')
 
 #Now Saving the dataframe locally
-print '------------------------SAVING MDD------------------------'
-df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "Analysis_df_Grav500.csv" )
-df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.MDDpath + name_suffix + "Analysis_df_TT.csv" )
+print '------------------------SAVING RDD------------------------'
+df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "Analysis_df_Grav500.csv" )
+df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "Analysis_df_TT.csv" )
