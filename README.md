@@ -58,9 +58,16 @@ And at the end:
 ```
 /data/spark-2.3.0-bin-hadoop2.7/sbin/stop-all.sh
 ```
+#### Run jupyter from your local machine in stica
+-  On stica:
+```
+ipython notebook --no-browser --port=8889
+jupyter notebook list
+```
+-  And save the token after token=XXX message you receive
+-  On your local browser go to 'localhost:8888' and use the token as a password
 
-####
-Using hadoop command
+#### Using hadoop command
 hdfs dfs -df -h
 hdfs dfs -df -h /data/
 hadoop fs -ls /
