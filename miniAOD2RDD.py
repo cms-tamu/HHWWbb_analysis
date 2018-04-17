@@ -31,6 +31,10 @@ for iVar in var_todrop:
     df_S_Grav500 = df_S_Grav500.drop(iVar)
 print "The Variables you have are: "
 df_TT.printSchema()
+#from pyspark import SparkContext
+#sc = SparkContext.getOrCreate()
+#df_TT = sc.parallelize(df_TT.collect())
+#df_S_Grav500 = sc.parallelize(df_S_Grav500.collect())
 
 # Let's make a basic selection
 print '------------------------SELECETION------------------------'
