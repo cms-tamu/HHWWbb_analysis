@@ -21,17 +21,15 @@ spark = SparkSession.builder \
 #spark.debug.maxToStringFields=50
 
 #Inputs
+SaveRDD = False
 var_todrop = ["nu_top_pt"] # To be adjusted
 Selection  = 'lep1_pt>20 and lep2_pt>20 and ll_M>76 and ll_M<106'
-SaveRDD = False
+FilesToConsider=["df_TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_final.root.csv",
+                 "df_GluGluToRadionToHHTo2B2VTo2L2Nu_M-500_narrow_13TeV-madgraph-v2_final.root.csv"]
 
 # Personalize outputname
 now = datetime.datetime.now()
 name_suffix = "analyzeRDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
-
-# Read the ROOT file into a Spark DataFrame...
-FilesToConsider=["df_TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_final.root.csv",
-                 "df_GluGluToRadionToHHTo2B2VTo2L2Nu_M-500_narrow_13TeV-madgraph-v2_final.root.csv"]
 
 df_TT      = spark.read.load(sf.pathCSV1 + FilesToConsider[0], format="csv", sep=",", inferSchema="true", header="true")
 df_Grav500 = spark.read.load(sf.pathCSV1 + FilesToConsider[1], format="csv", sep=",", inferSchema="true", header="true")

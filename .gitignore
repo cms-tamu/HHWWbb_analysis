@@ -1,2 +1,3 @@
 *.pyc
 utilities/*.pyc
+*.png
