@@ -17,6 +17,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Parameters
+Selection = 'true'
 SubString = "root" #To filter files to convert in CSV, use root to convert all of them
 if not os.path.exists(sf.RDDpath + "/miniAOD2RDD"):
     os.makedirs(sf.RDDpath + "/miniAOD2RDD")
@@ -36,8 +37,7 @@ if not os.path.exists(sf.RDDpath + "/miniAOD2RDD/" + name_suffix):
 for thisFile in NameList:
     print sf.pathROOT + thisFile
     df = spark.read.format("org.dianahep.sparkroot").load(sf.pathROOT + thisFile)
-    #use the following to drop variables you will not use
-    var_todrop = [] #to be finalized
+    var_todrop = [k for k in df.columns if ('Jet_btagSF' in k or 'alljets' in k or 'Jet_mht' in k )] # To be fixed
     for iVar in var_todrop:
         df = df.drop(iVar)
     #print "The Variables you have are: "
@@ -45,7 +45,6 @@ for thisFile in NameList:
     # Let's make a basic selection
     print '------------------------SELECTION------------------------'
     print "You have ", df.count(), "events"
-    Selection = 'lep1_pt>20 and lep2_pt>20 and ll_M>76 and ll_M<106'
     df        = df.where(Selection)
     print "After selection you have ", df.count(), "events"
     #Now Saving the dataframe locally
