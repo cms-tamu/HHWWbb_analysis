@@ -49,7 +49,7 @@ for thisFile in NameList:
     print "After selection you have ", df.count(), "events"
     #Now Saving the dataframe locally
     print '------------------------SAVING RDD------------------------'
-    df.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + "/miniAOD2RDD/" + name_suffix + "df_" + thisFile + ".csv" )
+    df.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + "/miniAOD2RDD/" + name_suffix + "/df_" + thisFile + ".csv" )
 
 #df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
 #df_S_Grav500 = spark.read.format("org.dianahep.sparkroot").load(sf.S_Grav500_file)

@@ -1,6 +1,7 @@
 #General
-RDDpath = "/data/RDD/"
-FIGpath = "figures/"
+pathROOT = "/data/taohuang/20180412_HHbbWW_addHME_10k_final/"
+RDDpath  = "/data/RDD/"
+FIGpath  = "figures/"
 
 #MINIAOD + HME
 #TT_file="/data/taohuang/HHNtuple_20180404/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8_Friend.root"
