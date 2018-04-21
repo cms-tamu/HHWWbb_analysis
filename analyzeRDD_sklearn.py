@@ -32,6 +32,8 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 #Parameters
+Selection = 'll_M > 76.'
+features  = ["jj_pt", "ll_pt", "ll_M", "ll_DR_l_l", "jj_DR_j_j", "llmetjj_DPhi_ll_jj", "llmetjj_minDR_l_j", "llmetjj_MTformula", "isSF"]
 FilesToConsider=["df_TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_final.root.csv",
                  "df_GluGluToRadionToHHTo2B2VTo2L2Nu_M-500_narrow_13TeV-madgraph-v2_final.root.csv"]
 
@@ -42,12 +44,18 @@ name_suffix = "analyzeRDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_"
 # Read the CSV file into a pandas datafame
 df_TT      = spark.read.load(sf.pathCSV1 + FilesToConsider[0], format="csv", sep=",", inferSchema="true", header="true")
 df_Grav500 = spark.read.load(sf.pathCSV1 + FilesToConsider[1], format="csv", sep=",", inferSchema="true", header="true")
-df_TT      = df_TT.toPandas()#spark.read.load(sf.pathCSV1 + FilesToConsider[0], format="csv", sep=",", inferSchema="true", header="true")
-df_Grav500 = df_Grav500.toPandas()#spark.read.load(sf.pathCSV1 + FilesToConsider[1], format="csv", sep=",", inferSchema="true", header="true")
-
-features=["jj_pt", "ll_pt", "ll_M", "ll_DR_l_l", "jj_DR_j_j", "llmetjj_DPhi_ll_jj", "llmetjj_minDR_l_j", "llmetjj_MTformula", "isSF"]
+#Keep only features
+df_TT      = df_TT.select(features)
+df_Grav500 = df_Grav500.select(features)
+# Let's make a basic selection
+#df_TT      = df_TT.where(Selection)
+#df_Grav500 = df_Grav500.where(Selection)
+# Now Convert to pandas
+df_TT      = df_TT.toPandas()
+df_Grav500 = df_Grav500.toPandas()
 df_TT = df_TT[features]
 df_Grav500 = df_Grav500[features]
+
 #Add if they are Signal or not
 df_TT['sample'] = 1
 df_Grav500['sample'] = 0

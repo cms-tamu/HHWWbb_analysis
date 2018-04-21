@@ -51,32 +51,3 @@ for thisFile in NameList:
     print '------------------------SAVING RDD------------------------'
     df.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + "/miniAOD2RDD/" + name_suffix + "/df_" + thisFile + ".csv" )
 
-#df_TT = spark.read.format("org.dianahep.sparkroot").load(sf.TT_file)
-#df_S_Grav500 = spark.read.format("org.dianahep.sparkroot").load(sf.S_Grav500_file)
-#
-##use the following to drop variables you will not use
-#var_todrop = [] #to be finalized
-#for iVar in var_todrop:
-#    df_TT = df_TT.drop(iVar)
-#    df_S_Grav500 = df_S_Grav500.drop(iVar)
-#print "The Variables you have are: "
-#df_TT.printSchema()
-##from pyspark import SparkContext
-##sc = SparkContext.getOrCreate()
-##df_TT = sc.parallelize(df_TT.collect())
-##df_S_Grav500 = sc.parallelize(df_S_Grav500.collect())
-#
-## Let's make a basic selection
-#print '------------------------SELECETION------------------------'
-#print "You have ", df_TT.count(), "events in TT"
-#print "You have ", df_S_Grav500.count(), "events in Grav_500"
-#Selection = 'lep1_pt>20 and lep2_pt>20 and ll_M>76 and ll_M<106 and HME>250'
-#df_TT        = df_TT.where(Selection)
-#df_S_Grav500 = df_S_Grav500.where(Selection)
-#print "After selection you have ", df_TT.count(), "events in TT"
-#print "After selection you have ", df_S_Grav500.count(), "events in Grav_500"
-#
-##Now Saving the dataframe locally
-#print '------------------------SAVING RDD------------------------'
-#df_S_Grav500.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "df_Grav500.csv" )
-#df_TT.write.format("com.databricks.spark.csv").option("header", "true").save( sf.RDDpath + name_suffix + "df_TT.csv" )
