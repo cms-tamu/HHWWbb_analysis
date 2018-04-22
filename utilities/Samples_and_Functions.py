@@ -1,3 +1,6 @@
+import ROOT
+from ROOT import TObject, TH1F, TH1D
+
 #ROOT File folder
 pathROOT   = "/data/taohuang/20180412_HHbbWW_addHME_10k_final/"
 #After miniAOD2RDD
@@ -9,3 +12,12 @@ pathDYdf   = "/data/RDD/DYminiAOD2RDD/miniAOD2RDD_lpernie_2018_4_21_18_35_33/"
 RDDpath    = "/data/RDD/"
 FIGpath    = "figures/"
 
+#DY Functions
+def get_DYweights( samplename ):
+    sampleinfo = {}
+    tfile = ROOT.TFile( pathDYroot + "/" + samplename+"_Friend.root" ,"READ")
+    h_cutflow = tfile.Get("h_cutflow")
+    sampleinfo["cross_section"] = tfile.Get("cross_section").GetVal()
+    sampleinfo["event_weight_sum"] = h_cutflow.GetBinContent(1)
+    sampleinfo["relativeWeight"] = sampleinfo["cross_section"]/h_cutflow.GetBinContent(1)
+    return sampleinfo
