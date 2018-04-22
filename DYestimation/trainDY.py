@@ -1,6 +1,7 @@
 # Import stuff
 import os, sys, shutil, datetime, getpass
-import Samples_and_FunctionsDY as sf
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import utilities.Samples_and_Functions as sf
 import pandas as pd
 import numpy as np
 
@@ -18,19 +19,36 @@ spark = SparkSession.builder \
             ) \
     .getOrCreate()
 
-# Creating a dictionary with all files
-FolderList = []
-for FoldName in os.listdir(sf.pathDYroot):
-    FolderList.append(FoldName)
-File_dic = dict()
-for iFold in FolderList:
-    fileList = []
-    for iFile in os.listdir(sf.pathDYroot+"/"+iFold):
-        fileList.append(sf.pathDYroot + "/" + iFold + "/" + iFile)
-    File_dic[iFold] = fileList
+if not os.path.exists(sf.RDDpath + "/DYminiAOD2RDD"):
+    os.makedirs(sf.RDDpath + "/DYminiAOD2RDD")
+
+# Personalize outputname
+now = datetime.datetime.now()
+name_suffix = "miniAOD2RDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
+
+for iFile in os.listdir(sf.pathDYroot):
+    if "_Friend.root" in iFile and os.path.isfile(sf.pathDYroot + "/" + iFile) and "TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Friend.root" in iFile:
+        print iFile
+        df = spark.read.format("org.dianahep.sparkroot").load(sf.pathDYroot + "/" + iFile)
+        var_todrop = [k for k in df.columns if ('alljets_' in k or 'Jet_mhtCleaning' in k )]
+        for iVar in var_todrop:
+            df = df.drop(iVar)
+        #Now Saving the dataframe locally
+        print '------------------------SAVING RDD------------------------'
+        df.write.format("parquet").save( sf.RDDpath + "/DYminiAOD2RDD/" + name_suffix + "/df_" + iFile[:-5] + ".parquet" )
+## Creating a dictionary with all files
+#FolderList = []
+#for FoldName in os.listdir(sf.pathDYroot):
+#    FolderList.append(FoldName)
+#File_dic = dict()
+#for iFold in FolderList:
+#    fileList = []
+#    for iFile in os.listdir(sf.pathDYroot+"/"+iFold):
+#        fileList.append(sf.pathDYroot + "/" + iFold + "/" + iFile)
+#    File_dic[iFold] = fileList
 
 # THIS GIVE ERROR
-df = spark.read.format("org.dianahep.sparkroot").load("/data/taohuang/HHNtuple_20180418_DYestimation/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/6214A145-5711-E811-997E-0CC47A78A42C_Friend.root")
+#df = spark.read.format("org.dianahep.sparkroot").load("file.root")#/data/taohuang/HHNtuple_20180418_DYestimation/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/6214A145-5711-E811-997E-0CC47A78A42C_Friend.root")
 # THIS WORK
 #df = spark.read.format("org.dianahep.sparkroot").load("/data/taohuang/20180412_HHbbWW_addHME_10k_final/WWToLNuQQ_aTGC_13TeV-madgraph-pythia8_final.root")
 

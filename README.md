@@ -37,6 +37,12 @@ spark-submit --class org.apache.spark.deploy.master.Master \
 ## Train DNN
 - TO BE FILLED
 
+## DY estimation
+First you can take the initial Ntuples and convert them in .parquet files
+-  python DYminiAOD2RDD.py (or use spark-submit)
+Then you need to run the ML code
+-  python trainDY.py (or use spark-submit)
+
 ## Extra
 #### Submit a pyspark script
 Start the master:
