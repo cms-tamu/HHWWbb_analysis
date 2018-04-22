@@ -2,3 +2,5 @@
 utilities/*.pyc
 *.png
 figures/*.png
+*.TMP
+DY/*.TMP

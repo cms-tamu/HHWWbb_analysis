@@ -1,5 +1,6 @@
 # Import stuff
 import os, sys, math, shutil, datetime, getpass
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utilities.Samples_and_Functions as sf
 import matplotlib.pyplot as plt
 from sklearn import datasets
