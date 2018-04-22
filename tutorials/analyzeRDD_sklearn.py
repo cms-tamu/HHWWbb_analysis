@@ -5,8 +5,7 @@ import utilities.Samples_and_Functions as sf
 import matplotlib.pyplot as plt
 from sklearn import datasets
 from sklearn.datasets import make_classification
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, ExtraTreesClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
@@ -79,38 +78,42 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-max_features="auto"
-mod_name = ['DecisionTreeClassifier','RandomForestClassifier','ExtraTreesClassifier','AdaBoostClassifier','XGBClassifier']
-models = [DecisionTreeClassifier(max_depth=None, criterion="entropy"),
-          RandomForestClassifier(n_estimators=X_train.shape[1], max_features=max_features, max_depth=None, random_state=2, bootstrap=False, n_jobs=-1),
-          ExtraTreesClassifier(n_estimators=X_train.shape[1]),
-          AdaBoostClassifier(DecisionTreeClassifier(max_depth=None), n_estimators=X_train.shape[1]),
+TrainModel=[True,True,True,True,True]
+mod_name = ['DecisionTreeClassifier','RandomForestClassifier','AdaBoostClassifier','GradientBoostingClassifier','XGBClassifier']
+models = [DecisionTreeClassifier(max_depth=None, criterion="entropy",splitter='best',class_weight={0: 0.7, 1: 0.3}),
+          RandomForestClassifier(n_estimators=25, max_features="auto", max_depth=None, random_state=2, bootstrap=True, n_jobs=-1),
+          AdaBoostClassifier(DecisionTreeClassifier(max_depth=None, criterion="entropy"), n_estimators=50),
+          # Tune max_depth for best performance; n_estimators > 100 since small risk of overtraining
+          GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=150, max_depth=10, criterion="friedman_mse"),
           XGBClassifier()]
-if len(mod_name) != len(models):
+if len(mod_name) != len(models) or len(mod_name) != len(TrainModel):
     print "Exiting... mod_name and models have a different size!" 
     sys.quit()
 
 iT = 0 
 for mod in models:
-    #Train
-    mod.fit(X_train, y_train)   
-    scores = mod.score(X_train, y_train)
-    #Predict
-    y_rf = mod.predict(X_test)
-    w1 = np.ones(len(y_test))
-    scores = mod.score(X_test, y_test)
-    print "--------------------------",mod_name[iT],"--------------------------"
-    print 'Signal efficiency:',        w1[(y_test == 0) & (y_rf == 0)].sum() / w1[y_test == 0].sum(),"(",w1[(y_test == 0) & (y_rf == 0)].sum(),"/",w1[y_test == 0].sum(),")"
-    print 'Background efficiency:',    w1[(y_test == 1) & (y_rf == 1)].sum() / w1[y_test == 1].sum(),"(",w1[(y_test == 1) & (y_rf == 1)].sum(),"/",w1[y_test == 1].sum(),")"
-    print 'Score:', scores
-    if mod_name[iT]=="DecisionTreeClassifier":
-        print "Sorting by importance: \n", sorted(zip(mod.feature_importances_,features), reverse=True)
-        tree.export_graphviz(mod, out_file = mod_name[iT] + ".dot", feature_names = features)
-        os.system("dot -Tpng " + mod_name[iT] + ".dot -o " + mod_name[iT] + ".png")
-        os.system("rm -rf " + mod_name[iT] + ".dot")
-    if mod_name[iT]=="XGBClassifier":
-        print(mod)
-    print "----------------------------------------------------"
+    if TrainModel[iT]:
+        #Train
+        mod.fit(X_train, y_train)   
+        scores = mod.score(X_train, y_train)
+        #Predict
+        y_rf = mod.predict(X_test)
+        w1 = np.ones(len(y_test))
+        scores = mod.score(X_test, y_test)
+        print "--------------------------",mod_name[iT],"--------------------------"
+        print 'Signal efficiency:',        w1[(y_test == 0) & (y_rf == 0)].sum() / w1[y_test == 0].sum(),"(",w1[(y_test == 0) & (y_rf == 0)].sum(),"/",w1[y_test == 0].sum(),")"
+        print 'Background efficiency:',    w1[(y_test == 1) & (y_rf == 1)].sum() / w1[y_test == 1].sum(),"(",w1[(y_test == 1) & (y_rf == 1)].sum(),"/",w1[y_test == 1].sum(),")"
+        print 'Score:', scores
+        if mod_name[iT]=="DecisionTreeClassifier":
+            print "Sorting by importance: \n", sorted(zip(mod.feature_importances_,features), reverse=True)
+            tree.export_graphviz(mod, out_file = mod_name[iT] + ".dot", feature_names = features)
+            os.system("dot -Tsvg " + mod_name[iT] + ".dot -o " + mod_name[iT] + ".svg")
+            os.system("rm -rf " + mod_name[iT] + ".dot")
+        if mod_name[iT]=="AdaBoostClassifier":
+            print "Sorting by importance: \n", sorted(zip(mod.feature_importances_,features), reverse=True)
+        if mod_name[iT]=="XGBClassifier":
+            print(mod)
+        print "----------------------------------------------------"
     iT+=1
 
 #plt.figure()

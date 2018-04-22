@@ -27,7 +27,7 @@ now = datetime.datetime.now()
 name_suffix = "miniAOD2RDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 
 for iFile in os.listdir(sf.pathDYroot):
-    if "_Friend.root" in iFile and os.path.isfile(sf.pathDYroot + "/" + iFile) and "TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_Friend.root" in iFile:
+    if "_Friend.root" in iFile and os.path.isfile(sf.pathDYroot + "/" + iFile):
         print iFile
         df = spark.read.format("org.dianahep.sparkroot").load(sf.pathDYroot + "/" + iFile)
         var_todrop = [k for k in df.columns if ('alljets_' in k or 'Jet_mhtCleaning' in k )]
