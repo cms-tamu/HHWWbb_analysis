@@ -9,10 +9,8 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, AdaB
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.multioutput import MultiOutputRegressor
 from sklearn.preprocessing import StandardScaler, RobustScaler
 from xgboost import XGBClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
@@ -33,7 +31,7 @@ spark = SparkSession.builder \
 
 #Parameters
 Selection = 'll_M > 76.'
-features  = ["jj_pt", "ll_pt", "ll_M", "ll_DR_l_l", "jj_DR_j_j", "llmetjj_DPhi_ll_jj", "llmetjj_minDR_l_j", "llmetjj_MTformula", "isSF"]
+features  = ["hme_mean_reco","hme_entries_reco","jj_pt", "ll_pt", "ll_M", "ll_DR_l_l", "jj_DR_j_j", "llmetjj_DPhi_ll_jj", "llmetjj_minDR_l_j", "llmetjj_MTformula", "isSF"]
 FilesToConsider=["df_TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_final.root.csv",
                  "df_GluGluToRadionToHHTo2B2VTo2L2Nu_M-500_narrow_13TeV-madgraph-v2_final.root.csv"]
 
@@ -45,6 +43,7 @@ name_suffix = "analyzeRDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_"
 df_TT      = spark.read.load(sf.pathCSV1 + FilesToConsider[0], format="csv", sep=",", inferSchema="true", header="true")
 df_Grav500 = spark.read.load(sf.pathCSV1 + FilesToConsider[1], format="csv", sep=",", inferSchema="true", header="true")
 #Keep only features
+df_Grav500.printSchema()
 df_TT      = df_TT.select(features)
 df_Grav500 = df_Grav500.select(features)
 # Let's make a basic selection

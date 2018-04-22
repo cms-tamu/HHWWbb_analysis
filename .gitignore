@@ -4,3 +4,4 @@ utilities/*.pyc
 figures/*.png
 *.TMP
 DY/*.TMP
+tutorials/*.svg
