@@ -25,10 +25,10 @@ if not os.path.exists(sf.RDDpath + "/DYtrain"):
 
 # Parameters
 selection = "(isMuMu==0) OR (isElEl==0)"
-genbb_selection = "(genjet1_partonFlavour == 5 && genjet2_partonFlavour == 5)"
-gencc_selection = "(genjet1_partonFlavour == 4 && genjet2_partonFlavour == 4)"
-sigSelection = genbb_selection + " || " + gencc_selection
-bkgSelection = "! " + sigSelection
+genbb_selection = "((genjet1_partonFlavour == 5) AND (genjet2_partonFlavour == 5))"
+gencc_selection = "((genjet1_partonFlavour == 4) AND (genjet2_partonFlavour == 4))"
+sigSelection = "(" + genbb_selection + " OR " + gencc_selection + ")"
+bkgSelection = "NOT" + sigSelection
 now = datetime.datetime.now()
 name_suffix = "miniAOD2RDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 #Feature and samples
@@ -41,6 +41,7 @@ df_DYToLL_M50_2J_db = spark.read.load(sf.pathDYdf + "df_DYToLL_2J_13TeV-amcatnlo
 frames = [df_DYToLL_M10t50_db, df_DYToLL_M50_0J_db, df_DYToLL_M50_1J_db, df_DYToLL_M50_2J_db]
 df_DY  = df_DYToLL_M10t50_db.union(df_DYToLL_M50_0J_db).union(df_DYToLL_M50_1J_db).union(df_DYToLL_M50_2J_db)
 df_DY  = df_DY.where(selection)
+df_DY.show(5)
 
 # Test And Training
 #X_train, X_test, y_train, y_test = train_test_split( df_DY, df_??,
