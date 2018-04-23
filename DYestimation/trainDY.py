@@ -12,7 +12,7 @@ from sklearn.externals import joblib
 # Start up spark and get our SparkSession... the lines below specify the dipendencies
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.sql.functions import udf, lit, rand
+from pyspark.sql.functions import udf, lit, rand, sum
 spark = SparkSession.builder \
     .appName(# Name of your application in the dashboard/UI
              "spark-analyzeRDD"
@@ -41,24 +41,39 @@ df_DYToLL_M10t50  = spark.read.load(sf.pathDYdf + "df_DYJetsToLL_M-10to50_TuneCU
 df_DYToLL_M50_0J  = spark.read.load(sf.pathDYdf + "df_DYToLL_0J_13TeV-amcatnloFXFX-pythia8_Friend.parquet", format="parquet")
 df_DYToLL_M50_1J  = spark.read.load(sf.pathDYdf + "df_DYToLL_1J_13TeV-amcatnloFXFX-pythia8_Friend.parquet", format="parquet")
 df_DYToLL_M50_2J  = spark.read.load(sf.pathDYdf + "df_DYToLL_2J_13TeV-amcatnloFXFX-pythia8_Friend.parquet", format="parquet")
+
+# Compute the weights
+DYToLL_M10t50 = sf.get_DYweights("DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8")
+DYToLL_M50_0J = sf.get_DYweights("DYToLL_0J_13TeV-amcatnloFXFX-pythia8")
+DYToLL_M50_1J = sf.get_DYweights("DYToLL_1J_13TeV-amcatnloFXFX-pythia8")
+DYToLL_M50_2J = sf.get_DYweights("DYToLL_2J_13TeV-amcatnloFXFX-pythia8")
+df_DYToLL_M10t50 = df_DYToLL_M10t50.withColumn('cross_section', lit(DYToLL_M10t50["cross_section"]))
+df_DYToLL_M10t50 = df_DYToLL_M10t50.withColumn('relativeWeight', lit(DYToLL_M10t50["relativeWeight"]))
+df_DYToLL_M50_0J = df_DYToLL_M50_0J.withColumn('cross_section', lit(DYToLL_M50_0J["cross_section"]))
+df_DYToLL_M50_0J = df_DYToLL_M50_0J.withColumn('relativeWeight', lit(DYToLL_M50_0J["relativeWeight"]))
+df_DYToLL_M50_1J = df_DYToLL_M50_1J.withColumn('cross_section', lit(DYToLL_M50_1J["cross_section"]))
+df_DYToLL_M50_1J = df_DYToLL_M50_1J.withColumn('relativeWeight', lit(DYToLL_M50_1J["relativeWeight"]))
+df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('cross_section', lit(DYToLL_M50_2J["cross_section"]))
+df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('relativeWeight', lit(DYToLL_M50_2J["relativeWeight"]))
 # Merge in a single DF and perform the selection
 df_DY  = df_DYToLL_M10t50.union(df_DYToLL_M50_0J).union(df_DYToLL_M50_1J).union(df_DYToLL_M50_2J)
 df_DY  = df_DY.where(selection)
-# Compute the weights
-DYJetsToLL_M10t50 = sf.get_DYweights("DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8")
-DYJetsToLL_M50_0J = sf.get_DYweights("DYToLL_0J_13TeV-amcatnloFXFX-pythia8")
-DYJetsToLL_M50_1J = sf.get_DYweights("DYToLL_1J_13TeV-amcatnloFXFX-pythia8")
-DYJetsToLL_M50_2J = sf.get_DYweights("DYToLL_2J_13TeV-amcatnloFXFX-pythia8")
-#def computeWeight(a, b):
-#    return a*b
-#weightUDF = udf(computeWeight, FloatType())
-#df_DY = df_DY.withColumn("weightExpr", weightUDF("event_reco_weight", "sample_weight",FIX))
-#cross_section*event_reco_weight*sample_weight/event_weight_sum
-#Sig and Bacl should have same total weight
 
+def computeWeight(cross_section, event_reco_weight, relativeWeight):
+    return cross_section * event_reco_weight * relativeWeight
+weightUDF = udf(computeWeight, FloatType())
+df_DY = df_DY.withColumn("weightExpr", weightUDF("cross_section", "event_reco_weight","relativeWeight"))
 #Now define Signal and background 
 df_DY_sig = df_DY.where(sigSelection)
 df_DY_bac = df_DY.where(bkgSelection)
+#Sig and Bacl should have same total weight
+TotSweight = float(str(df_DY_sig.groupBy().agg(sum("weightExpr")).collect())[21:-3])
+TotBweight = float(str(df_DY_bac.groupBy().agg(sum("weightExpr")).collect())[21:-3])
+df_DY_sig = df_DY_sig.withColumn("weightExpr_norm", df_DY_sig.weightExpr/TotSweight).drop("weightExpr")
+df_DY_bac = df_DY_bac.withColumn("weightExpr_norm", df_DY_bac.weightExpr/TotBweight).drop("weightExpr")
+print df_DY_sig.groupBy().agg(sum("weightExpr_norm")).collect()
+print df_DY_bac.groupBy().agg(sum("weightExpr_norm")).collect()
+
 # Add the Classification depending on the category (-0.5 / 0.5)
 df_DY_sig = df_DY_sig.withColumn("Y", lit(1))
 df_DY_bac = df_DY_bac.withColumn("Y", lit(-1))
