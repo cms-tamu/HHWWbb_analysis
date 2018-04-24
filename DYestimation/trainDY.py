@@ -59,10 +59,10 @@ df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('relativeWeight', lit(DYToLL_M50_
 df_DY  = df_DYToLL_M10t50.union(df_DYToLL_M50_0J).union(df_DYToLL_M50_1J).union(df_DYToLL_M50_2J)
 df_DY  = df_DY.where(selection)
 
-def computeWeight(cross_section, event_reco_weight, relativeWeight):
-    return cross_section * event_reco_weight * relativeWeight
+def computeWeight(event_reco_weight, relativeWeight):
+    return event_reco_weight * relativeWeight
 weightUDF = udf(computeWeight, FloatType())
-df_DY = df_DY.withColumn("weightExpr", weightUDF("cross_section", "event_reco_weight","relativeWeight"))
+df_DY = df_DY.withColumn("weightExpr", weightUDF("event_reco_weight","relativeWeight"))
 #Now define Signal and background 
 df_DY_sig = df_DY.where(sigSelection)
 df_DY_bac = df_DY.where(bkgSelection)
@@ -80,18 +80,19 @@ df_DY_bac = df_DY_bac.withColumn("Y", lit(-1))
 # Merge in a single DF and shuffle
 df_DY = df_DY_sig.union(df_DY_bac)
 df_DY = df_DY.orderBy(rand())
-# Create the Y df
+# Now divide Features, Classes, and weights
+df_DY_X = df_DY.select(features)
 df_DY_Y = df_DY.select("Y")
-# Now only keep the features in X
-df_DY = df_DY.select(features)
+df_DY_w = df_DY.select("weightExpr_norm")
 # Transform pySpark datafram to pandas df, so that you can use sklearn
-df_DY   = df_DY.toPandas()
+df_DY_X = df_DY_X.toPandas()
 df_DY_Y = df_DY_Y.toPandas()
+df_DY_w = df_DY_w.toPandas()
 
 # Test And Training
-X_train, X_test, y_train, y_test = train_test_split( df_DY, df_DY_Y,
-                                                     train_size=0.7, test_size=0.3,
-                                                     random_state=4)
+X_train, X_test, y_train, y_test, w_train, w_test = train_test_split( df_DY_X, df_DY_Y, df_DY_w,
+                                                                      train_size=0.7, test_size=0.3,
+                                                                      random_state=4)
 # Scaler for better training
 scaler  = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -99,6 +100,7 @@ X_test  = scaler.transform(X_test)
 y_train = np.ravel(y_train) # Return a contiguous flattened array
 y_test  = np.ravel(y_test)
 
+# Note that the weight can only be given per class, not per event.
 model = LogisticRegression(penalty='l2', dual=False,  tol=0.0001, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight=None,
                            random_state=None, solver='liblinear',max_iter=100, multi_class='ovr',verbose=0, warm_start=False, n_jobs=1)
 #model = SVC(C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=False, tol=0.001,
@@ -108,8 +110,12 @@ print "Fitting"
 model.fit(X_train, y_train)
 print "Score is:", model.score(X_train, y_train)
 # Save your model
+print "Saving the model and the dataframe..."
 pd.DataFrame(X_train).to_csv("models/X_train.csv",index = False,header=True)
 pd.DataFrame(X_test).to_csv("models/X_test.csv",index = False,header=True)
 pd.DataFrame(y_train).to_csv("models/y_train.csv",index = False,header=True)
 pd.DataFrame(y_test).to_csv("models/y_test.csv",index = False,header=True)
+pd.DataFrame(w_train).to_csv("models/w_train.csv",index = False,header=True)
+pd.DataFrame(w_test).to_csv("models/w_test.csv",index = False,header=True)
 joblib.dump(model, 'models/DYmodel.pkl')
+print "THE END."
