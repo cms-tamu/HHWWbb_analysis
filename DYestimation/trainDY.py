@@ -28,7 +28,7 @@ if not os.path.exists(sf.RDDpath + '/DYtrain'):
 if not os.path.exists('models/'):
     os.makedirs('models/')
 # Parameters and Selections
-selection = "(isMuMu>0) OR (isElEl>0)"
+selection = "(((isMuMu>0) OR (isElEl>0)) AND ll_M > 12)"
 genbb_selection = "((genjet1_partonFlavour == 5) AND (genjet2_partonFlavour == 5))" #DY + bb
 gencc_selection = "((genjet1_partonFlavour == 4) AND (genjet2_partonFlavour == 4))" #DY + cc
 sigSelection = "(" + genbb_selection + " OR " + gencc_selection + ")" # DY + bb or cc
@@ -47,12 +47,16 @@ DYToLL_M50_0J = sf.get_DYweights("DYToLL_0J_13TeV-amcatnloFXFX-pythia8")
 DYToLL_M50_1J = sf.get_DYweights("DYToLL_1J_13TeV-amcatnloFXFX-pythia8")
 DYToLL_M50_2J = sf.get_DYweights("DYToLL_2J_13TeV-amcatnloFXFX-pythia8")
 df_DYToLL_M10t50 = df_DYToLL_M10t50.withColumn('cross_section', lit(DYToLL_M10t50["cross_section"]))
+df_DYToLL_M10t50 = df_DYToLL_M10t50.withColumn('event_weight_sum', lit(DYToLL_M10t50["event_weight_sum"]))
 df_DYToLL_M10t50 = df_DYToLL_M10t50.withColumn('relativeWeight', lit(DYToLL_M10t50["relativeWeight"]))
 df_DYToLL_M50_0J = df_DYToLL_M50_0J.withColumn('cross_section', lit(DYToLL_M50_0J["cross_section"]))
+df_DYToLL_M50_0J = df_DYToLL_M50_0J.withColumn('event_weight_sum', lit(DYToLL_M50_0J["event_weight_sum"]))
 df_DYToLL_M50_0J = df_DYToLL_M50_0J.withColumn('relativeWeight', lit(DYToLL_M50_0J["relativeWeight"]))
 df_DYToLL_M50_1J = df_DYToLL_M50_1J.withColumn('cross_section', lit(DYToLL_M50_1J["cross_section"]))
+df_DYToLL_M50_1J = df_DYToLL_M50_1J.withColumn('event_weight_sum', lit(DYToLL_M50_1J["event_weight_sum"]))
 df_DYToLL_M50_1J = df_DYToLL_M50_1J.withColumn('relativeWeight', lit(DYToLL_M50_1J["relativeWeight"]))
 df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('cross_section', lit(DYToLL_M50_2J["cross_section"]))
+df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('event_weight_sum', lit(DYToLL_M50_2J["event_weight_sum"]))
 df_DYToLL_M50_2J = df_DYToLL_M50_2J.withColumn('relativeWeight', lit(DYToLL_M50_2J["relativeWeight"]))
 # Merge in a single df and perform basic selection
 df_DY  = df_DYToLL_M10t50.union(df_DYToLL_M50_0J).union(df_DYToLL_M50_1J).union(df_DYToLL_M50_2J)
@@ -61,7 +65,7 @@ df_DY  = df_DY.where(selection)
 def computeWeight(event_reco_weight, relativeWeight):
     return event_reco_weight * relativeWeight
 weightUDF = udf(computeWeight, FloatType())
-df_DY = df_DY.withColumn("weightExpr", weightUDF("event_reco_weight","relativeWeight"))
+df_DY = df_DY.withColumn("weightExpr", weightUDF("event_reco_weight", "relativeWeight"))
 # Now define Signal and Background 
 df_DY_sig = df_DY.where(sigSelection)
 df_DY_bac = df_DY.where(bkgSelection)
