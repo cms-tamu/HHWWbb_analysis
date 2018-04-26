@@ -67,23 +67,15 @@ for flav1 in flavors:
 print y_rf.shape
 for i in range(0, y_rf.shape[0]):
     if (i % 100 == 0):
-        print("Event %d over %d" % (i + 1, entries))
-
+        print("Event %d over %d" % (i + 1, y_rf.shape[0]))
     # Weight: take into account? Also lepton ID SF?
-    weight = X_test[i,"sample_weight"] * X_test[i,"event_reco_weight"] 
-
+    weight = float(X_test["sample_weight"].iloc[i]) * float(X_test["event_reco_weight"].iloc[i])
     def pass_flavor_cut(flav1, flav2):
-	return  X_test[i,"genjet1_partonFlavour" == partonidmap[flav1] and X_test[i,"genjet2_partonFlavour"] == partonidmap[flav2]
-
-    def get_value(object, val):
-	return getattr(object, val)
-
-    bdt_value = ProbS[i]
-
+        return int(X_test['genjet1_partonFlavour'].iloc[i]) == int(partonidmap[flav1]) and int(X_test['genjet2_partonFlavour'].iloc[i]) == int(partonidmap[flav2])
     for flav1 in flavors:
         for flav2 in flavors:
             key = (flav1, flav2)
-            efficiencies[key].FillWeighted(pass_flavor_cut(flav1, flav2), weight, bdt_value)
+            efficiencies[key].FillWeighted(pass_flavor_cut(flav1, flav2), weight, ProbS[i])
 
 print("Done")
 output = ROOT.TFile.Open("outDYtesting.root", "recreate")

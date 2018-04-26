@@ -1,8 +1,9 @@
 *.pyc
-utilities/*.pyc
 *.png
-figures/*.png
 *.TMP
-DY/*.TMP
-DY/models/*
+DYestimation/*.TMP
+DYestimation/models/*
+DYestimation/*root
+figures/*.png
 tutorials/*.svg
+utilities/*.pyc
