@@ -102,3 +102,10 @@ source /data/root/bin/thisroot.sh
 #Histogrammar
 export PYTHONPATH=/data/histogrammar/histogrammar-python:$PYTHONPATH
 ```
+
+#### Debugging
+1) 'java.io.FileNotFoundException: [...] (Too many open files)' 
+-  sudo vim /etc/security/limits.conf
+And increase the maximum number of open file for your user
+-  username        hard nofile 10000
+-  username        soft nofile 6000
