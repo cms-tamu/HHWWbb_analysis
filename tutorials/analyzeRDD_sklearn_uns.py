@@ -1,5 +1,6 @@
 # Import stuff
 import os, sys, math, shutil, datetime, getpass
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utilities.Samples_and_Functions as sf
 import matplotlib.pyplot as plt
 from sklearn import datasets
@@ -15,13 +16,29 @@ from sklearn import cluster, datasets
 import numpy as np
 import pandas as pd
 
+# Start up spark and get our SparkSession... the lines below specify the dipendencies
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+from pyspark.sql.functions import udf
+spark = SparkSession.builder \
+    .appName(# Name of your application in the dashboard/UI
+             "spark-analyzeRDD"
+            ) \
+    .config(# Tell Spark to load some extra libraries from Maven (the Java repository)
+            'spark.jars.packages',
+            'org.diana-hep:spark-root_2.11:0.1.15,org.diana-hep:histogrammar-sparksql_2.11:1.0.4,org.diana-hep:histogrammar_2.11:1.0.4'
+            ) \
+    .getOrCreate()
+
 # Personalize outputname
 now = datetime.datetime.now()
 name_suffix = "analyzeRDD_" + str(getpass.getuser()) + "_" + str(now.year) + "_" + str(now.month) + "_" + str(now.day) + "_" + str(now.hour) + "_" + str(now.minute) + "_" + str(now.second)
 
 # Read the CSV file into a pandas datafame
-df_TT = pd.read_csv(sf.TT_df, header = 0, delimiter = ',')
-df_Grav500 = pd.read_csv(sf.S_Grav500_df, header = 0, delimiter = ',')
+FilesToConsider=["df_TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8_final.root.csv",
+                 "df_GluGluToRadionToHHTo2B2VTo2L2Nu_M-500_narrow_13TeV-madgraph-v2_final.root.csv"]
+df_TT      = spark.read.load(sf.pathCSV1 + FilesToConsider[0], format="csv", sep=",", inferSchema="true", header="true")
+df_Grav500 = spark.read.load(sf.pathCSV1 + FilesToConsider[1], format="csv", sep=",", inferSchema="true", header="true")
 features=["jj_pt", "ll_pt", "ll_M", "ll_DR_l_l", "jj_DR_j_j", "llmetjj_DPhi_ll_jj", "llmetjj_minDR_l_j", "llmetjj_MTformula", "isSF"]
 df_TT = df_TT[features]
 df_Grav500 = df_Grav500[features]
