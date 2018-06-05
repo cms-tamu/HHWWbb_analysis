@@ -234,9 +234,11 @@ def binCoeff(n,k):
 def myPDF(x, *p):
   # Parameters
   #beN, be0, be1, be2, be3, be4, be5, be6,
-  gsN, gsMu, gsSig,   exp_mumuN, exp_mumuP, exp_mumuC,     gsN_ah, gsMu_ah, gsSig_ah,    gsN_eta, gsMu_eta, gsSig_eta,    gsN_rho, gsMu_rho, gsSig_rho,   gsN_phi, gsMu_phi, gsSig_phi,    cbN, cba, cbMu, cbSig,    gsN_psi, gsMu_psi, gsSig_psi = p
+  gsN, gsMu, gsSig,  exp_lonN, exp_lonT, exp_lonC,   exp_mumuN, exp_mumuP, exp_mumuC,     gsN_ah, gsMu_ah, gsSig_ah,    gsN_eta, gsMu_eta, gsSig_eta,    gsN_rho, gsMu_rho, gsSig_rho,   gsN_phi, gsMu_phi, gsSig_phi,    cbN, cba, cbMu, cbSig,    gsN_psi, gsMu_psi, gsSig_psi = p
   #General shape
   general   =  gsN*np.exp(-(x-gsMu)**2/(2.*gsSig**2)) #np.poly1d([gsN, gsMu, gsSig, g4])#gsN*np.exp(-(x-gsMu)**2/(2.*gsSig**2))
+  #Exp long
+  exp_long  = exp_lonN* np.exp(-x*exp_lonT) + exp_lonC
   #Exp mumu
   exp_mumu  = exp_mumuN*(x*pow( (x/0.2113)*(x/0.2113) - 1.0, exp_mumuP )*np.exp( -exp_mumuC*( (x/0.2113)*(x/0.2113) - 1.0 ) ))
   #Ad-hoc
@@ -255,5 +257,5 @@ def myPDF(x, *p):
   #psi
   gauss_psi = gsN_psi*np.exp(-(x-gsMu_psi)**2/(2.*gsSig_psi**2)) 
 
-  return general + exp_mumu + gauss_ah + gauss_eta + gauss_rho + gauss_phi + cb_JPsi + gauss_psi
+  return general + exp_long + exp_mumu + gauss_ah + gauss_eta + gauss_rho + gauss_phi + cb_JPsi + gauss_psi
 
